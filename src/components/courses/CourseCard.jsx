@@ -1,9 +1,13 @@
 import { Link } from 'react-router-dom'
-import { Star, Clock, Users } from 'lucide-react'
+import { Star, Clock, Users, CircleCheck } from 'lucide-react'
 import { formatCurrency, formatDiscount } from '../../utils/format'
+import { useAuth } from '../../hooks/useAuth'
 
 export default function CourseCard({ course }) {
   const discount = formatDiscount(course.price, course.originalPrice)
+  const { enrolledCourseIds } = useAuth()
+
+  const isEnrolled = (enrolledCourseIds || []).includes(course.id)
 
   return (
     <Link
@@ -11,7 +15,7 @@ export default function CourseCard({ course }) {
       className="card-surface group flex h-full flex-col overflow-visible transition-shadow hover:shadow-md"
     >
       {/* Course Header */}
-      <div className="flex items-center justify-between border-b border-slate-100 bg-navy-50 px-5 py-4">
+      <div className="flex items-center justify-between border-b border-slate-100 bg-navy-50 px-5 py-3">
         <span className="font-mono text-[11px] uppercase tracking-wide text-navy-500">
           {course.code}
         </span>
@@ -22,21 +26,21 @@ export default function CourseCard({ course }) {
       </div>
 
       {/* Course Content */}
-      <div className="flex flex-1 flex-col gap-4 p-6">
-        <span className="eyebrow">
+      <div className="flex flex-1 flex-col gap-3 p-5">
+        <span className="eyebrow block truncate">
           {course.category}
         </span>
 
-        <h3 className="font-display text-lg font-semibold leading-7 text-ink group-hover:text-navy-700">
+        <h3 className="line-clamp-2 min-h-[56px] font-display text-lg font-semibold leading-7 text-ink group-hover:text-navy-700">
           {course.title}
         </h3>
 
-        <p className="text-sm leading-6 text-slate-500">
+        <p className="line-clamp-3 min-h-[72px] text-sm leading-6 text-slate-500">
           {course.summary}
         </p>
 
         {/* Course Details */}
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-1 text-xs text-slate-500">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-slate-500">
           <span className="flex items-center gap-1">
             <Star size={13} className="fill-amber-400 text-amber-400" />
             {course.rating}
@@ -54,7 +58,7 @@ export default function CourseCard({ course }) {
         </div>
 
         {/* Price */}
-        <div className="mt-auto flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-5">
+        <div className="mt-auto flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4">
           <div className="flex items-baseline gap-2">
             <span className="font-display text-lg font-bold text-ink">
               {formatCurrency(course.price)}
@@ -75,11 +79,16 @@ export default function CourseCard({ course }) {
         </div>
 
         {/* Enrollment Button */}
-        <div className="pt-2">
+        {isEnrolled ? (
+          <span className="inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-lg bg-teal-50 px-4 py-3 text-sm font-semibold text-teal-700 ring-1 ring-teal-200">
+            <CircleCheck size={16} />
+            Already Enrolled
+          </span>
+        ) : (
           <span className="inline-flex min-h-[44px] w-full items-center justify-center rounded-lg bg-navy-600 px-4 py-3 text-sm font-semibold text-white transition-colors group-hover:bg-navy-700">
             Enroll Now
           </span>
-        </div>
+        )}
       </div>
     </Link>
   )
