@@ -4,6 +4,7 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import Logo from '../common/Logo'
 import { NAV_LINKS } from '../../constants/site'
 import { useAuth } from '../../hooks/useAuth'
+import { stopPreview } from '../../utils/adminPreview'
 
 const ROLE_HOME = {
   student: { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -16,6 +17,8 @@ export default function Navbar() {
   const { isAuthenticated, user, role, logout } = useAuth()
   const navigate = useNavigate()
   const home = ROLE_HOME[role] ?? ROLE_HOME.student
+  // Admin ikkada unte adi "View as student" preview matrame
+  const isAdminPreview = isAuthenticated && role === 'admin'
 
   const linkClasses = ({ isActive }) =>
     `font-display text-sm font-medium transition-colors ${
@@ -23,13 +26,29 @@ export default function Navbar() {
     }`
 
   const handleLogout = () => {
+    stopPreview()
     logout()
     setIsOpen(false)
     navigate('/')
   }
 
+  const backToAdmin = () => {
+    stopPreview()
+    setIsOpen(false)
+    navigate('/admin')
+  }
+
   return (
     <header className="sticky top-0 z-40 border-b border-slate-200 bg-slate-50/90 backdrop-blur">
+      {isAdminPreview && (
+        <div className="bg-navy px-4 py-1.5 text-center font-mono text-[11px] uppercase tracking-wider text-white">
+          Previewing as student ·{' '}
+          <button type="button" onClick={backToAdmin} className="font-semibold underline">
+            Back to Admin Panel
+          </button>
+        </div>
+      )}
+
       <div className="container-page flex h-16 items-center justify-between sm:h-20">
         <Logo size="lg" />
 
@@ -43,16 +62,23 @@ export default function Navbar() {
 
         <div className="hidden items-center gap-3 md:flex">
           {isAuthenticated ? (
-            <>
-              <NavLink to={home.to} className="btn-secondary !px-4 !py-2 text-xs">
-                <home.icon size={15} />
-                {user?.name}
-              </NavLink>
-              <button onClick={handleLogout} className="btn-primary !px-4 !py-2 text-xs">
-                <LogOut size={15} />
-                Log out
+            isAdminPreview ? (
+              <button type="button" onClick={backToAdmin} className="btn-primary !px-4 !py-2 text-xs">
+                <ShieldCheck size={15} />
+                Back to Admin Panel
               </button>
-            </>
+            ) : (
+              <>
+                <NavLink to={home.to} className="btn-secondary !px-4 !py-2 text-xs">
+                  <home.icon size={15} />
+                  {user?.name}
+                </NavLink>
+                <button onClick={handleLogout} className="btn-primary !px-4 !py-2 text-xs">
+                  <LogOut size={15} />
+                  Log out
+                </button>
+              </>
+            )
           ) : (
             <>
               <NavLink to="/login" className="btn-secondary !px-4 !py-2 text-xs">
@@ -97,16 +123,23 @@ export default function Navbar() {
 
             <div className="mt-3 flex flex-col gap-2 border-t border-slate-100 pt-3">
               {isAuthenticated ? (
-                <>
-                  <NavLink to={home.to} onClick={() => setIsOpen(false)} className="btn-secondary">
-                    <home.icon size={15} />
-                    {home.label}
-                  </NavLink>
-                  <button onClick={handleLogout} className="btn-primary">
-                    <LogOut size={15} />
-                    Log out
+                isAdminPreview ? (
+                  <button type="button" onClick={backToAdmin} className="btn-primary">
+                    <ShieldCheck size={15} />
+                    Back to Admin Panel
                   </button>
-                </>
+                ) : (
+                  <>
+                    <NavLink to={home.to} onClick={() => setIsOpen(false)} className="btn-secondary">
+                      <home.icon size={15} />
+                      {home.label}
+                    </NavLink>
+                    <button onClick={handleLogout} className="btn-primary">
+                      <LogOut size={15} />
+                      Log out
+                    </button>
+                  </>
+                )
               ) : (
                 <>
                   <NavLink to="/login" onClick={() => setIsOpen(false)} className="btn-secondary">

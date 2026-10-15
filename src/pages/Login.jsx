@@ -7,19 +7,33 @@ import { useAuth } from '../hooks/useAuth'
 const ROLE_HOME = { student: '/dashboard', instructor: '/instructor', admin: '/admin' }
 
 export default function Login() {
-  const { login, loading, verifyOtp, resendOtp, pendingOtpEmail } = useAuth()
+  const { login, logout, loading, verifyOtp, resendOtp, pendingOtpEmail } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const [error, setError] = useState('')
+  const [adminBlocked, setAdminBlocked] = useState(false)
   const [needsOtp, setNeedsOtp] = useState(false)
   const [otpEmail, setOtpEmail] = useState('')
 
+  // Admin account ikkada login ayithe logout chesi admin login ki pampistundi
+  const blockAdmin = async () => {
+    await logout()
+    setNeedsOtp(false)
+    setAdminBlocked(true)
+    setError('This is an admin account. Please use the admin login.')
+  }
+
   const handleSubmit = async (form) => {
     setError('')
+    setAdminBlocked(false)
     setNeedsOtp(false)
     try {
       const data = await login({ email: form.email, password: form.password })
       const role = data?.user?.role || 'student'
+      if (role === 'admin') {
+        await blockAdmin()
+        return
+      }
       navigate(location.state?.from || ROLE_HOME[role] || '/dashboard', { replace: true })
     } catch (err) {
       // Backend sends the machine code as `errorCode` (see errorHandler.js).
@@ -41,10 +55,12 @@ export default function Login() {
   const handleVerify = async (otp) => {
     const data = await verifyOtp({ email: otpEmail || pendingOtpEmail, otp })
     const role = data?.user?.role || 'student'
+    if (role === 'admin') {
+      await blockAdmin()
+      return
+    }
     navigate(ROLE_HOME[role] || '/dashboard', { replace: true })
   }
-
-  const showOtp = needsOtp
 
   return (
     <div className="container-page flex min-h-[70vh] items-center justify-center py-12">
@@ -54,7 +70,7 @@ export default function Login() {
         <p className="mt-1 text-sm text-slate-500">Continue your learning path.</p>
 
         <div className="mt-6">
-          {showOtp || needsOtp ? (
+          {needsOtp ? (
             <OtpForm
               email={otpEmail || pendingOtpEmail}
               loading={loading}
@@ -67,6 +83,14 @@ export default function Login() {
         </div>
 
         {error && <p className="mt-4 text-center text-sm text-red-500">{error}</p>}
+
+        {adminBlocked && (
+          <p className="mt-2 text-center text-sm">
+            <Link to="/admin/login" className="font-semibold text-navy hover:text-navy-700">
+              Go to admin login
+            </Link>
+          </p>
+        )}
 
         <p className="mt-4 text-center text-sm">
           <Link to="/forgot-password" className="font-semibold text-navy hover:text-navy-700">
@@ -83,4 +107,4 @@ export default function Login() {
       </div>
     </div>
   )
-}
+} 
