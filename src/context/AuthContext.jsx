@@ -1,21 +1,22 @@
 const login = async ({ email, password }) => {
-setLoading(true)
+  setLoading(true);
 
-try {
-const data = await loginRequest({ email, password })
+  try {
+    const data = await loginRequest({ email, password });
 
-```
-if (!data?.user) {
-  throw new Error('User details are missing from the login response.')
-}
+    if (!data?.user) {
+      throw new Error(
+        "User details are missing from the login response."
+      );
+    }
 
-setUser(data.user)
-setPendingEmail(null)
+    setUser(data.user);
+    setPendingEmail(null);
 
-return data
-```
-
-} finally {
-setLoading(false)
-}
-}
+    return data;
+  } catch (error) {
+    throw error;
+  } finally {
+    setLoading(false);
+  }
+};
