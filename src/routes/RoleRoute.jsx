@@ -1,21 +1,25 @@
-import { Navigate } from 'react-router-dom'
+import { Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import Spinner from '../components/common/Spinner'
 
 export default function RoleRoute({ allow = [], children }) {
-const { user, initializing } = useAuth()
+  const { isAuthenticated, role, initializing } = useAuth()
+  const location = useLocation()
 
-if (initializing) {
-return <Spinner label="Checking session" />
-}
+  if (initializing) {
+    return <Spinner label="Checking session" />
+  }
 
-if (!user) {
-return <Navigate to="/admin/login" replace />
-}
+  if (!isAuthenticated) {
+    const loginPath = allow.includes('admin') ? '/admin/login' : '/login'
+    return <Navigate to={loginPath} replace state={{ from: location.pathname }} />
+  }
 
-if (!allow.includes(user.role)) {
-return <Navigate to="/admin/login" replace />
-}
+  const currentRole = String(role || '').toLowerCase()
+  if (!allow.includes(currentRole)) {
+    const fallback = currentRole === 'admin' ? '/admin' : '/dashboard'
+    return <Navigate to={fallback} replace />
+  }
 
-return children
+  return children
 }
