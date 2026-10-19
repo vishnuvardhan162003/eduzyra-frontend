@@ -1,10 +1,20 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Loader2 } from 'lucide-react'
+
+const RESEND_COOLDOWN = 60
 
 export default function OtpForm({ email, onVerify, onResend, loading }) {
   const [otp, setOtp] = useState('')
   const [error, setError] = useState('')
   const [resent, setResent] = useState(false)
+  const [sending, setSending] = useState(false)
+  const [cooldown, setCooldown] = useState(0)
+
+  useEffect(() => {
+    if (cooldown <= 0) return
+    const t = setTimeout(() => setCooldown((c) => c - 1), 1000)
+    return () => clearTimeout(t)
+  }, [cooldown])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -21,13 +31,23 @@ export default function OtpForm({ email, onVerify, onResend, loading }) {
   }
 
   const handleResend = async () => {
+    if (sending || cooldown > 0) return
     setError('')
     setResent(false)
+    setSending(true)
     try {
       await onResend()
       setResent(true)
+      setCooldown(RESEND_COOLDOWN)
     } catch (err) {
-      setError(err?.message || 'Could not resend code. Try again.')
+      if (err?.status === 429) {
+        setError('Too many requests. Please wait a minute before asking for a new code.')
+        setCooldown(RESEND_COOLDOWN)
+      } else {
+        setError(err?.message || 'Could not resend code. Try again.')
+      }
+    } finally {
+      setSending(false)
     }
   }
 
@@ -56,8 +76,13 @@ export default function OtpForm({ email, onVerify, onResend, loading }) {
         {loading && <Loader2 size={16} className="animate-spin" />}
         Verify email
       </button>
-      <button type="button" onClick={handleResend} className="text-sm font-semibold text-navy hover:text-navy-700">
-        Resend code
+      <button
+        type="button"
+        onClick={handleResend}
+        disabled={sending || cooldown > 0}
+        className="text-sm font-semibold text-navy hover:text-navy-700 disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        {sending ? 'Sending…' : cooldown > 0 ? `Resend code in ${cooldown}s` : 'Resend code'}
       </button>
     </form>
   )
