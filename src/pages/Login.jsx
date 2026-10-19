@@ -36,16 +36,13 @@ export default function Login() {
       }
       navigate(location.state?.from || ROLE_HOME[role] || '/dashboard', { replace: true })
     } catch (err) {
-      // Backend sends the machine code as `errorCode` (see errorHandler.js).
       const machineCode = err?.data?.errorCode || err?.data?.code
-      if (machineCode === 'EMAIL_NOT_VERIFIED' || err?.status === 403) {
+      const notVerified =
+        machineCode === 'EMAIL_NOT_VERIFIED' || /verif/i.test(err?.message || '')
+      if (notVerified) {
         setOtpEmail(form.email)
         setNeedsOtp(true)
-        try {
-          await resendOtp(form.email)
-        } catch {
-          // resend is best-effort; OTP from signup may still be valid
-        }
+        setError('Your email is not verified yet. Enter the code we sent, or tap "Resend code".')
       } else {
         setError(err?.message || 'Login failed. Check your email and password.')
       }
@@ -107,4 +104,4 @@ export default function Login() {
       </div>
     </div>
   )
-} 
+}
