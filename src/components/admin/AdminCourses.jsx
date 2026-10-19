@@ -13,8 +13,8 @@ export default function AdminCourses() {
         </button>
       </div>
 
-      {/* Horizontal scroll sirf ee box lo, page layout ki em kadu */}
-      <div className="card-surface overflow-x-auto">
+      {/* Vertical + horizontal scroll ee box lo matrame */}
+      <div className="card-surface custom-scroll max-h-[65vh] overflow-auto">
         <div className="min-w-[720px] divide-y divide-slate-50">
           {COURSES.map((course) => (
             <div key={course.id} className="flex items-center justify-between gap-4 px-4 py-3">
