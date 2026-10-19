@@ -31,7 +31,7 @@ export default function AuthForm({ mode = 'login', onSubmit, loading }) {
   const handleSubmit = (event) => {
     event.preventDefault()
     if (validate()) {
-      onSubmit(form)
+      onSubmit({ ...form, email: form.email.trim().toLowerCase() })
     }
   }
 
