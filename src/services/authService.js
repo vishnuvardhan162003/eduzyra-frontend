@@ -1,56 +1,26 @@
 // Auth API wrappers around the Eduzyra Node backend (/api/auth/*).
-// Backend contract:
-//   POST /api/auth/signup        { name, email, password } -> { requiresOtp: true, email }
-//   POST /api/auth/verify-otp    { email, otp }            -> { user, token }
-//   POST /api/auth/resend-otp    { email }                 -> { message }
-//   POST /api/auth/login         { email, password }       -> { user, token }
-//   POST /api/auth/google        { credential }            -> { user, token }
-//   GET  /api/auth/me                                    -> { user }
-//   PATCH /api/auth/me           { name?, email?, ... }    -> { user }
+// Backend contract (OTP signup and password reset were removed server-side):
+//   POST  /api/auth/google   { credential } -> { user, token, isNewUser }   (only signup path)
+//   POST  /api/auth/login    { email, password } -> { user, token }
+//   GET   /api/auth/me                       -> { user }
+//   PATCH /api/auth/me       { name?, email?, ... } -> { user }
 
 import { apiFetch, setToken } from './api'
 
-export async function signupRequest({ name, email, password }) {
-  return apiFetch('/api/auth/signup', {
+export async function googleLoginRequest({ credential }) {
+  const data = await apiFetch('/api/auth/google', {
     method: 'POST',
-    body: { name, email, password },
-    auth: false,
-  })
-}
-
-export async function verifyOtpRequest({ email, otp }) {
-  const data = await apiFetch('/api/auth/verify-otp', {
-    method: 'POST',
-    body: { email, otp },
+    body: { credential },
     auth: false,
   })
   if (data?.token) setToken(data.token)
   return data
-}
-
-export async function resendOtpRequest({ email }) {
-  return apiFetch('/api/auth/resend-otp', {
-    method: 'POST',
-    body: { email },
-    auth: false,
-  })
 }
 
 export async function loginRequest({ email, password }) {
   const data = await apiFetch('/api/auth/login', {
     method: 'POST',
     body: { email, password },
-    auth: false,
-  })
-  if (data?.token) setToken(data.token)
-  return data
-}
-
-// Backend team path/field peru vere ayithe ikkade marchandi
-export async function googleLoginRequest({ credential }) {
-  const data = await apiFetch('/api/auth/google', {
-    method: 'POST',
-    body: { credential },
     auth: false,
   })
   if (data?.token) setToken(data.token)
