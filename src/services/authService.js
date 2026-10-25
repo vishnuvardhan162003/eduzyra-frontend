@@ -4,6 +4,7 @@
 //   POST /api/auth/verify-otp    { email, otp }            -> { user, token }
 //   POST /api/auth/resend-otp    { email }                 -> { message }
 //   POST /api/auth/login         { email, password }       -> { user, token }
+//   POST /api/auth/google        { credential }            -> { user, token }
 //   GET  /api/auth/me                                    -> { user }
 //   PATCH /api/auth/me           { name?, email?, ... }    -> { user }
 
@@ -39,6 +40,17 @@ export async function loginRequest({ email, password }) {
   const data = await apiFetch('/api/auth/login', {
     method: 'POST',
     body: { email, password },
+    auth: false,
+  })
+  if (data?.token) setToken(data.token)
+  return data
+}
+
+// Backend team path/field peru vere ayithe ikkade marchandi
+export async function googleLoginRequest({ credential }) {
+  const data = await apiFetch('/api/auth/google', {
+    method: 'POST',
+    body: { credential },
     auth: false,
   })
   if (data?.token) setToken(data.token)
