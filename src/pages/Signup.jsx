@@ -2,10 +2,11 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import AuthForm from '../components/auth/AuthForm'
 import OtpForm from '../components/auth/OtpForm'
+import GoogleButton from '../components/auth/GoogleButton'
 import { useAuth } from '../hooks/useAuth'
 
 export default function Signup() {
-  const { signup, loading, verifyOtp, resendOtp } = useAuth()
+  const { signup, googleLogin, logout, loading, verifyOtp, resendOtp } = useAuth()
   const navigate = useNavigate()
   const [error, setError] = useState('')
   const [createdEmail, setCreatedEmail] = useState(null)
@@ -17,6 +18,21 @@ export default function Signup() {
       setCreatedEmail(form.email)
     } catch (err) {
       setError(err?.message || 'Signup failed. Try a different email.')
+    }
+  }
+
+  const handleGoogle = async (credential) => {
+    setError('')
+    try {
+      const data = await googleLogin(credential)
+      if (data?.user?.role === 'admin') {
+        await logout()
+        setError('This is an admin account. Please use the admin login.')
+        return
+      }
+      navigate('/dashboard', { replace: true })
+    } catch (err) {
+      setError(err?.message || 'Google sign-in failed. Please try again.')
     }
   }
 
@@ -43,7 +59,10 @@ export default function Signup() {
               onResend={() => resendOtp(createdEmail)}
             />
           ) : (
-            <AuthForm mode="signup" onSubmit={handleSubmit} loading={loading} />
+            <>
+              <AuthForm mode="signup" onSubmit={handleSubmit} loading={loading} />
+              <GoogleButton onCredential={handleGoogle} disabled={loading} />
+            </>
           )}
         </div>
 
