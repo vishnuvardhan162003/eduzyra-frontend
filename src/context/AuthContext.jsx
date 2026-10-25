@@ -5,10 +5,7 @@ import {
   googleLoginRequest,
   loginRequest,
   logoutRequest,
-  resendOtpRequest,
-  signupRequest,
   updateProfileRequest,
-  verifyOtpRequest,
 } from '../services/authService'
 
 export const AuthContext = createContext(null)
@@ -19,31 +16,11 @@ export const ROLES = {
   ADMIN: 'admin',
 }
 
-const PENDING_EMAIL_KEY = 'eduzyra_pending_otp_email'
-
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(false)
   const [initializing, setInitializing] = useState(true)
   const [enrolledCourseIds, setEnrolledCourseIds] = useState([])
-  const [pendingOtpEmail, setPendingOtpEmail] = useState(() => {
-    try {
-      return localStorage.getItem(PENDING_EMAIL_KEY) || null
-    } catch {
-      return null
-    }
-  })
-
-  const setPendingEmail = (email) => {
-    setPendingOtpEmail(email)
-    try {
-      if (email) localStorage.setItem(PENDING_EMAIL_KEY, email)
-      else localStorage.removeItem(PENDING_EMAIL_KEY)
-    } catch {
-      // ignore
-    }
-  }
-
   const loadEnrollments = useCallback(async () => {
     try {
       const data = await apiFetch('/api/enrollments/me', { method: 'GET' })
@@ -104,7 +81,6 @@ export function AuthProvider({ children }) {
         throw new Error('User details are missing from the login response.')
       }
       setUser(data.user)
-      setPendingEmail(null)
       return data
     } finally {
       setLoading(false)
@@ -119,37 +95,11 @@ export function AuthProvider({ children }) {
         throw new Error('User details are missing from the Google login response.')
       }
       setUser(data.user)
-      setPendingEmail(null)
       return data
     } finally {
       setLoading(false)
     }
   }
-
-  const signup = async ({ name, email, password }) => {
-    setLoading(true)
-    try {
-      const data = await signupRequest({ name, email, password })
-      setPendingEmail(email)
-      return data
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const verifyOtp = async ({ email, otp }) => {
-    setLoading(true)
-    try {
-      const data = await verifyOtpRequest({ email, otp })
-      setUser(data.user)
-      setPendingEmail(null)
-      return data
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const resendOtp = async (email) => resendOtpRequest({ email: email || pendingOtpEmail })
 
   const logout = async () => {
     await logoutRequest()
@@ -191,10 +141,6 @@ export function AuthProvider({ children }) {
       initializing,
       login,
       googleLogin,
-      signup,
-      verifyOtp,
-      resendOtp,
-      pendingOtpEmail,
       logout,
       updateProfile,
       isAuthenticated: Boolean(user),
@@ -205,7 +151,7 @@ export function AuthProvider({ children }) {
       refreshEnrollments: loadEnrollments,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [user, loading, initializing, enrolledCourseIds, isEnrolledIn, pendingOtpEmail, loadEnrollments],
+    [user, loading, initializing, enrolledCourseIds, isEnrolledIn, loadEnrollments],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
