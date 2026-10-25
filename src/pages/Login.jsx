@@ -2,12 +2,13 @@ import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import AuthForm from '../components/auth/AuthForm'
 import OtpForm from '../components/auth/OtpForm'
+import GoogleButton from '../components/auth/GoogleButton'
 import { useAuth } from '../hooks/useAuth'
 
 const ROLE_HOME = { student: '/dashboard', instructor: '/instructor', admin: '/admin' }
 
 export default function Login() {
-  const { login, logout, loading, verifyOtp, resendOtp, pendingOtpEmail } = useAuth()
+  const { login, googleLogin, logout, loading, verifyOtp, resendOtp, pendingOtpEmail } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const [error, setError] = useState('')
@@ -49,6 +50,22 @@ export default function Login() {
     }
   }
 
+  const handleGoogle = async (credential) => {
+    setError('')
+    setAdminBlocked(false)
+    try {
+      const data = await googleLogin(credential)
+      const role = data?.user?.role || 'student'
+      if (role === 'admin') {
+        await blockAdmin()
+        return
+      }
+      navigate(location.state?.from || ROLE_HOME[role] || '/dashboard', { replace: true })
+    } catch (err) {
+      setError(err?.message || 'Google sign-in failed. Please try again.')
+    }
+  }
+
   const handleVerify = async (otp) => {
     const data = await verifyOtp({ email: otpEmail || pendingOtpEmail, otp })
     const role = data?.user?.role || 'student'
@@ -75,7 +92,10 @@ export default function Login() {
               onResend={() => resendOtp(otpEmail || pendingOtpEmail)}
             />
           ) : (
-            <AuthForm mode="login" onSubmit={handleSubmit} loading={loading} />
+            <>
+              <AuthForm mode="login" onSubmit={handleSubmit} loading={loading} />
+              <GoogleButton onCredential={handleGoogle} disabled={loading} />
+            </>
           )}
         </div>
 
