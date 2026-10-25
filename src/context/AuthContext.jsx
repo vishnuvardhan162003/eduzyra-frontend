@@ -2,6 +2,7 @@ import { createContext, useCallback, useEffect, useMemo, useState } from 'react'
 import { apiFetch, getToken, setToken } from '../services/api'
 import {
   fetchMe,
+  googleLoginRequest,
   loginRequest,
   logoutRequest,
   resendOtpRequest,
@@ -110,6 +111,21 @@ export function AuthProvider({ children }) {
     }
   }
 
+  const googleLogin = async (credential) => {
+    setLoading(true)
+    try {
+      const data = await googleLoginRequest({ credential })
+      if (!data?.user) {
+        throw new Error('User details are missing from the Google login response.')
+      }
+      setUser(data.user)
+      setPendingEmail(null)
+      return data
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const signup = async ({ name, email, password }) => {
     setLoading(true)
     try {
@@ -174,6 +190,7 @@ export function AuthProvider({ children }) {
       loading,
       initializing,
       login,
+      googleLogin,
       signup,
       verifyOtp,
       resendOtp,
