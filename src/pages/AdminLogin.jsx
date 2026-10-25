@@ -3,20 +3,17 @@ import { Link, useNavigate } from 'react-router-dom'
 import { ShieldCheck } from 'lucide-react'
 import Logo from '../components/common/Logo'
 import AuthForm from '../components/auth/AuthForm'
-import OtpForm from '../components/auth/OtpForm'
 import { useAuth } from '../hooks/useAuth'
 
 export default function AdminLogin() {
-  const { login, logout, loading, verifyOtp, resendOtp } = useAuth()
+  const { login, logout, loading } = useAuth()
   const navigate = useNavigate()
   const [error, setError] = useState('')
-  const [otpEmail, setOtpEmail] = useState('')
 
   // Admin kaani account aithe logout chesi block chestundi
   const finish = async (data) => {
     if (data?.user?.role !== 'admin') {
       await logout()
-      setOtpEmail('')
       setError('This is not an admin account. Students, please use the student login.')
       return
     }
@@ -29,23 +26,8 @@ export default function AdminLogin() {
       const data = await login({ email: form.email, password: form.password })
       await finish(data)
     } catch (err) {
-      const machineCode = err?.data?.errorCode || err?.data?.code
-      if (machineCode === 'EMAIL_NOT_VERIFIED' || err?.status === 403) {
-        setOtpEmail(form.email)
-        try {
-          await resendOtp(form.email)
-        } catch {
-          // best-effort
-        }
-      } else {
-        setError(err?.message || 'Login failed. Check your email and password.')
-      }
+      setError(err?.message || 'Login failed. Check your email and password.')
     }
-  }
-
-  const handleVerify = async (otp) => {
-    const data = await verifyOtp({ email: otpEmail, otp })
-    await finish(data)
   }
 
   return (
@@ -61,16 +43,7 @@ export default function AdminLogin() {
         <p className="mt-1 text-sm text-slate-500">Restricted area. Authorised staff only.</p>
 
         <div className="mt-6">
-          {otpEmail ? (
-            <OtpForm
-              email={otpEmail}
-              loading={loading}
-              onVerify={handleVerify}
-              onResend={() => resendOtp(otpEmail)}
-            />
-          ) : (
-            <AuthForm mode="login" onSubmit={handleSubmit} loading={loading} />
-          )}
+          <AuthForm mode="login" onSubmit={handleSubmit} loading={loading} />
         </div>
 
         {error && <p className="mt-4 text-center text-sm text-red-500">{error}</p>}
