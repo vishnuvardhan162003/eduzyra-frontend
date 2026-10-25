@@ -1,52 +1,37 @@
 import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import AuthForm from '../components/auth/AuthForm'
-import OtpForm from '../components/auth/OtpForm'
 import GoogleButton from '../components/auth/GoogleButton'
 import { useAuth } from '../hooks/useAuth'
 
 const ROLE_HOME = { student: '/dashboard', instructor: '/instructor', admin: '/admin' }
 
 export default function Login() {
-  const { login, googleLogin, logout, loading, verifyOtp, resendOtp, pendingOtpEmail } = useAuth()
+  const { login, googleLogin, logout, loading } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const [error, setError] = useState('')
   const [adminBlocked, setAdminBlocked] = useState(false)
-  const [needsOtp, setNeedsOtp] = useState(false)
-  const [otpEmail, setOtpEmail] = useState('')
 
   // Admin account ikkada login ayithe logout chesi admin login ki pampistundi
-  const blockAdmin = async () => {
-    await logout()
-    setNeedsOtp(false)
-    setAdminBlocked(true)
-    setError('This is an admin account. Please use the admin login.')
+  const finish = async (data) => {
+    const role = data?.user?.role || 'student'
+    if (role === 'admin') {
+      await logout()
+      setAdminBlocked(true)
+      setError('This is an admin account. Please use the admin login.')
+      return
+    }
+    navigate(location.state?.from || ROLE_HOME[role] || '/dashboard', { replace: true })
   }
 
   const handleSubmit = async (form) => {
     setError('')
     setAdminBlocked(false)
-    setNeedsOtp(false)
     try {
-      const data = await login({ email: form.email, password: form.password })
-      const role = data?.user?.role || 'student'
-      if (role === 'admin') {
-        await blockAdmin()
-        return
-      }
-      navigate(location.state?.from || ROLE_HOME[role] || '/dashboard', { replace: true })
+      await finish(await login({ email: form.email, password: form.password }))
     } catch (err) {
-      const machineCode = err?.data?.errorCode || err?.data?.code
-      const notVerified =
-        machineCode === 'EMAIL_NOT_VERIFIED' || /verif/i.test(err?.message || '')
-      if (notVerified) {
-        setOtpEmail(form.email)
-        setNeedsOtp(true)
-        setError('Your email is not verified yet. Enter the code we sent, or tap "Resend code".')
-      } else {
-        setError(err?.message || 'Login failed. Check your email and password.')
-      }
+      setError(err?.message || 'Login failed. Check your email and password.')
     }
   }
 
@@ -54,26 +39,10 @@ export default function Login() {
     setError('')
     setAdminBlocked(false)
     try {
-      const data = await googleLogin(credential)
-      const role = data?.user?.role || 'student'
-      if (role === 'admin') {
-        await blockAdmin()
-        return
-      }
-      navigate(location.state?.from || ROLE_HOME[role] || '/dashboard', { replace: true })
+      await finish(await googleLogin(credential))
     } catch (err) {
       setError(err?.message || 'Google sign-in failed. Please try again.')
     }
-  }
-
-  const handleVerify = async (otp) => {
-    const data = await verifyOtp({ email: otpEmail || pendingOtpEmail, otp })
-    const role = data?.user?.role || 'student'
-    if (role === 'admin') {
-      await blockAdmin()
-      return
-    }
-    navigate(ROLE_HOME[role] || '/dashboard', { replace: true })
   }
 
   return (
@@ -84,19 +53,8 @@ export default function Login() {
         <p className="mt-1 text-sm text-slate-500">Continue your learning path.</p>
 
         <div className="mt-6">
-          {needsOtp ? (
-            <OtpForm
-              email={otpEmail || pendingOtpEmail}
-              loading={loading}
-              onVerify={handleVerify}
-              onResend={() => resendOtp(otpEmail || pendingOtpEmail)}
-            />
-          ) : (
-            <>
-              <AuthForm mode="login" onSubmit={handleSubmit} loading={loading} />
-              <GoogleButton onCredential={handleGoogle} disabled={loading} />
-            </>
-          )}
+          <AuthForm mode="login" onSubmit={handleSubmit} loading={loading} />
+          <GoogleButton onCredential={handleGoogle} disabled={loading} />
         </div>
 
         {error && <p className="mt-4 text-center text-sm text-red-500">{error}</p>}
@@ -109,13 +67,7 @@ export default function Login() {
           </p>
         )}
 
-        <p className="mt-4 text-center text-sm">
-          <Link to="/forgot-password" className="font-semibold text-navy hover:text-navy-700">
-            Forgot password?
-          </Link>
-        </p>
-
-        <p className="mt-2 text-center text-sm text-slate-500">
+        <p className="mt-6 text-center text-sm text-slate-500">
           New here?{' '}
           <Link to="/signup" className="font-semibold text-navy hover:text-navy-700">
             Create an account
