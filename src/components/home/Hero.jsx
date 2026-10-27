@@ -1,4 +1,4 @@
-import { ArrowRight, Star, Users, Award, Sparkles, CheckCircle2 } from 'lucide-react'
+import { ArrowRight, Star } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 export default function Hero() {
@@ -289,17 +289,6 @@ export default function Hero() {
                   <path d="M246 138 Q 252 142 258 138" stroke="#1D353A" strokeWidth="1.5" strokeLinecap="round" fill="none" />
                 </g>
               </svg>
-
-              {/* Floating EdTech Feature Badges (Suited for Eduzyra) */}
-              <div className="absolute -top-3 -left-4 sm:left-4 rounded-full bg-white/95 px-4 py-2 shadow-card border border-white/80 backdrop-blur text-[#1D353A] flex items-center gap-2 animate-bounce duration-1000">
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-peach text-[#1D353A] text-xs font-bold">✓</span>
-                <span className="font-display text-xs font-bold tracking-tight">1-on-1 Mentor Reviews</span>
-              </div>
-
-              <div className="absolute bottom-6 right-2 sm:right-6 rounded-full bg-[#FAF7F2] px-4 py-2 shadow-card border border-slate-200/80 text-[#1D353A] flex items-center gap-2">
-                <Sparkles size={14} className="text-[#A75B3A]" />
-                <span className="font-display text-xs font-bold tracking-tight">Real Capstone Projects</span>
-              </div>
             </div>
 
           </div>
