@@ -26,25 +26,34 @@ const STEPS = [
 
 export default function HowItWorks() {
   return (
-    <section className="border-y border-slate-200 bg-white py-16 sm:py-20">
+    <section className="border-y border-slate-200/80 bg-[#FAF7F2] py-16 sm:py-24">
       <div className="container-page">
         <SectionHeading
-          eyebrow="How it works"
+          eyebrow="Structured Learning"
           title="Every path follows the same four checkpoints"
+          description="Designed to turn theoretical knowledge into tangible, production-grade applications you can showcase."
           align="center"
         />
 
-        <div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {STEPS.map((step, index) => (
-            <div key={step.title} className="relative flex flex-col gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-navy-50 text-navy">
-                <step.icon size={20} />
+            <div
+              key={step.title}
+              className="card-surface relative flex flex-col gap-4 p-7 hover:-translate-y-1 transition-all duration-300 rounded-3xl border border-slate-200/90 bg-white"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-peach/20 text-[#1D353A] border border-peach/40 shadow-xs">
+                  <step.icon size={22} className="text-[#A75B3A]" />
+                </div>
+                <span className="font-mono text-xs font-bold text-[#1D353A]/60 bg-[#FAF7F2] px-3 py-1 rounded-full">
+                  STEP 0{index + 1}
+                </span>
               </div>
-              <span className="font-mono text-xs text-slate-400">
-                Step {String(index + 1).padStart(2, '0')}
-              </span>
-              <h3 className="font-display text-base font-semibold">{step.title}</h3>
-              <p className="text-sm leading-relaxed text-slate-500">{step.description}</p>
+
+              <div>
+                <h3 className="font-display text-lg font-bold text-[#1D353A]">{step.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-slate-600">{step.description}</p>
+              </div>
             </div>
           ))}
         </div>

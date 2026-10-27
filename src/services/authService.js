@@ -43,4 +43,14 @@ export async function logoutRequest() {
   }
   setToken(null)
 }
+export async function signupRequest() {
+  throw new Error('Email signup is no longer available. Please continue with Google.')
+}
 
+export async function verifyOtpRequest() {
+  throw new Error('OTP verification is no longer available.')
+}
+
+export async function resendOtpRequest() {
+  throw new Error('OTP verification is no longer available.')
+}

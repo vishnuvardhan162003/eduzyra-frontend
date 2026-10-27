@@ -1,3 +1,4 @@
+
 import { Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import MainLayout from './components/layout/MainLayout'
@@ -30,14 +31,17 @@ import Certificate from './pages/Certificate'
 import VerifyCertificate from './pages/VerifyCertificate'
 import NotFound from './pages/NotFound'
 
-export default function App() {
+import PrivacyPolicy from './pages/PrivacyPolicy'
+import TermsOfService from './pages/TermsOfService'
+
+function App() {
   return (
     <AuthProvider>
       <Routes>
-        {/* Admin login (standalone, no student navbar) */}
+        {/* Admin login */}
         <Route path="/admin/login" element={<AdminLogin />} />
 
-        {/* Admin panel (own layout, admin only) */}
+        {/* Admin panel */}
         <Route
           element={
             <RoleRoute allow={['admin']}>
@@ -48,26 +52,48 @@ export default function App() {
           <Route path="/admin" element={<AdminDashboard />} />
         </Route>
 
-        {/* Student site (admin ki block, "View as student" preview lo matrame allow) */}
+        {/* Student website */}
         <Route element={<StudentSiteGuard />}>
           <Route element={<MainLayout />}>
-            {/* Public */}
+            {/* Public pages */}
             <Route path="/" element={<Home />} />
             <Route path="/courses" element={<Courses />} />
             <Route path="/courses/:courseId" element={<CourseDetail />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/feedback" element={<Feedback />} />
-            <Route path="/verify-certificate" element={<VerifyCertificate />} />
-            <Route path="/certificate/:certificateId" element={<Certificate />} />
+            <Route
+              path="/verify-certificate"
+              element={<VerifyCertificate />}
+            />
+            <Route
+              path="/certificate/:certificateId"
+              element={<Certificate />}
+            />
 
-            {/* Auth */}
+            {/* Privacy Policy and Terms */}
+            <Route
+              path="/privacy-policy"
+              element={<PrivacyPolicy />}
+            />
+            <Route
+              path="/terms-of-service"
+              element={<TermsOfService />}
+            />
+
+            {/* Authentication */}
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route
+              path="/forgot-password"
+              element={<ForgotPassword />}
+            />
+            <Route
+              path="/reset-password"
+              element={<ResetPassword />}
+            />
 
-            {/* Student only (admin ki block) */}
+            {/* Student only */}
             <Route
               path="/profile"
               element={
@@ -78,6 +104,7 @@ export default function App() {
                 </ProtectedRoute>
               }
             />
+
             <Route
               path="/dashboard"
               element={
@@ -88,6 +115,7 @@ export default function App() {
                 </ProtectedRoute>
               }
             />
+
             <Route
               path="/checkout/:courseId"
               element={
@@ -98,6 +126,7 @@ export default function App() {
                 </ProtectedRoute>
               }
             />
+
             <Route
               path="/payment/success"
               element={
@@ -108,6 +137,7 @@ export default function App() {
                 </ProtectedRoute>
               }
             />
+
             <Route
               path="/payment/failed"
               element={
@@ -118,6 +148,7 @@ export default function App() {
                 </ProtectedRoute>
               }
             />
+
             <Route
               path="/learn/:courseId"
               element={
@@ -129,7 +160,7 @@ export default function App() {
               }
             />
 
-            {/* Instructor only */}
+            {/* Instructor */}
             <Route
               path="/instructor"
               element={
@@ -139,6 +170,7 @@ export default function App() {
               }
             />
 
+            {/* Not Found */}
             <Route path="*" element={<NotFound />} />
           </Route>
         </Route>
@@ -146,3 +178,6 @@ export default function App() {
     </AuthProvider>
   )
 }
+
+export default App
+
